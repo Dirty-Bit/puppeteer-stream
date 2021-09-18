@@ -12,58 +12,76 @@ function START_RECORDING({
 	videoBitsPerSecond,
 	bitsPerSecond,
 	mimeType,
+	defaultViewport
 }) {
-	chrome.tabCapture.capture(
-		{
-			audio,
-			video,
-		},
-		(stream) => {
-			if (!stream) return;
 
-			recorder = new MediaRecorder(stream, {
-				ignoreMutedMedia: true,
-				audioBitsPerSecond,
-				videoBitsPerSecond,
-				bitsPerSecond,
-				mimeType,
-			});
-			recorders[index] = recorder;
-			// TODO: recorder onerror
-
-			recorder.ondataavailable = async function (event) {
-				if (event.data.size > 0) {
-					const buffer = await event.data.arrayBuffer();
-					const data = arrayBufferToString(buffer);
-
-					if (window.sendData) {
-						window.sendData({
-							id: index,
-							data,
-						});
-					}
-				}
-			};
-			recorder.onerror = () => recorder.stop();
-
-			recorder.onstop = function () {
-				try {
-					const tracks = stream.getTracks();
-
-					tracks.forEach(function (track) {
-						track.stop();
+		var onTabCaputureReady = function() {
+			chrome.tabCapture.capture(
+				{
+					audio,
+					video,
+				},
+				(stream) => {
+					if (!stream) return;
+	
+					recorder = new MediaRecorder(stream, {
+						ignoreMutedMedia: true,
+						audioBitsPerSecond,
+						videoBitsPerSecond,
+						bitsPerSecond,
+						mimeType,
 					});
-				} catch (error) {}
-			};
-			stream.oninactive = () => {
-				try {
-					recorder.stop();
-				} catch (error) {}
-			};
-
-			recorder.start(frameSize);
+					recorders[index] = recorder;
+					// TODO: recorder onerror
+	
+					recorder.ondataavailable = async function (event) {
+						if (event.data.size > 0) {
+							const buffer = await event.data.arrayBuffer();
+							const data = arrayBufferToString(buffer);
+	
+							if (window.sendData) {
+								window.sendData({
+									id: index,
+									data,
+								});
+							}
+						}
+					};
+					recorder.onerror = () => recorder.stop();
+	
+					recorder.onstop = function () {
+						try {
+							const tracks = stream.getTracks();
+	
+							tracks.forEach(function (track) {
+								track.stop();
+							});
+						} catch (error) {}
+					};
+					stream.oninactive = () => {
+						try {
+							recorder.stop();
+						} catch (error) {}
+					};
+	
+					recorder.start(frameSize);
+				}
+			);
 		}
-	);
+
+		if (defaultViewport && defaultViewport.width && defaultViewport.height) {
+			// change window size to match options, puppeteer viewport is not the same
+			// as the window size and the recording can spill over beyond the bounds of viewport
+			chrome.windows.getCurrent(function(targetWindow) {
+				chrome.windows.update(targetWindow.id, {
+					width: defaultViewport.width,
+					height: defaultViewport.height
+				});
+			});
+		} else {
+			// nothing sent, start capture
+			onTabCaputureReady();
+		}
 }
 
 function STOP_RECORDING(index) {
