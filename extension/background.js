@@ -76,6 +76,9 @@ function START_RECORDING({
 				chrome.windows.update(targetWindow.id, {
 					width: defaultViewport.width,
 					height: defaultViewport.height
+				}, function() {
+					// start capture
+					onTabCaputureReady();
 				});
 			});
 		} else {
