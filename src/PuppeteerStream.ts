@@ -60,7 +60,7 @@ export async function launch(opts: LaunchOptions & BrowserOptions & ChromeArgOpt
 
 	opts.headless = false;
 
-	const browser: Browser = await puppeteer.launch(opts);
+	const browser: Browser = await puppeteer.launch(opts) as puppeteer.Browser;
 	// @ts-ignore
 	browser.encoders = new Map();
 
