@@ -21,8 +21,8 @@ export class Stream extends Readable {
 
 declare module "puppeteer" {
 	interface Page {
-		index: number;
-		getStream(opts: getStreamOptions): Promise<Stream>;
+		index?: number;
+		getStream? (opts: getStreamOptions): Promise<Stream>;
 	}
 }
 
