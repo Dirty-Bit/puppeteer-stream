@@ -19,13 +19,6 @@ export class Stream extends Readable {
 	}
 }
 
-declare module "puppeteer" {
-	interface Page {
-		index?: number;
-		getStream? (opts: getStreamOptions): Promise<Stream>;
-	}
-}
-
 export async function launch(opts: LaunchOptions & BrowserOptions & ChromeArgOptions) {
 	if (!opts) opts = {};
 
