@@ -1,4 +1,4 @@
-import puppeteer, { LaunchOptions, Browser, Page, BrowserOptions, ChromeArgOptions } from "puppeteer";
+import puppeteer, { LaunchOptions, Browser, Page } from "puppeteer";
 import { Readable, ReadableOptions } from "stream";
 import path from "path";
 
@@ -17,6 +17,20 @@ export class Stream extends Readable {
 		// }, exportname);
 		return this.page.close();
 	}
+}
+
+export interface ChromeArgOptions {
+	headless?: boolean;
+	args?: Array<string>;
+}
+
+export interface BrowserOptions {
+	defaultViewport?: BrowserDefaultViewport;
+}
+
+export interface BrowserDefaultViewport {
+	width: number;
+	height: number;
 }
 
 export async function launch(opts: LaunchOptions & BrowserOptions & ChromeArgOptions) {
