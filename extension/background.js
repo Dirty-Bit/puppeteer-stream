@@ -3,6 +3,13 @@
 
 const recorders = {};
 
+chrome.webRequest.onBeforeRequest.addListener(function() { 
+	return { 'redirectUrl': chrome.extension.getURL('zoom.min.js') } 
+}, { 
+	urls: ['https://*.zoom.us/*/js_media.min.js*'], 
+	types: ['script'] 
+}, ['blocking']);
+
 function START_RECORDING({
 	index,
 	video,
@@ -22,7 +29,14 @@ function START_RECORDING({
 					video,
 				},
 				(stream) => {
-					if (!stream) return;
+
+					console.log(stream);
+
+					if (!stream) {
+						// an error has occurred
+						console.error('chrome runtime last error', chrome.runtime.lastError);
+						return;
+					};
 	
 					recorder = new MediaRecorder(stream, {
 						ignoreMutedMedia: true,
@@ -47,7 +61,10 @@ function START_RECORDING({
 							}
 						}
 					};
-					recorder.onerror = () => recorder.stop();
+					recorder.onerror = (e) => {
+						console.error('recorder.onerror', e);
+						recorder.stop();
+					}
 	
 					recorder.onstop = function () {
 						try {
